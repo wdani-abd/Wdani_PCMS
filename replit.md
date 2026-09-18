@@ -25,13 +25,15 @@
 - `artifacts/property-management/src/App.tsx` — واجهة التطبيق ومسارات لوحة التحكم.
 - `artifacts/property-management/src/index.css` — ثيم RTL والألوان والطباعة.
 - `lib/api-spec/openapi.yaml` — عقد API ومصدر توليد hooks.
-- `artifacts/api-server/src/routes/property-management.ts` — عمليات API وبيانات العينة الحالية.
+- `artifacts/api-server/src/routes/property-management.ts` — عمليات API وحساب مؤشرات لوحة التحكم مباشرة من Supabase.
 - `supabase/schema.sql` — جداول Supabase والعلاقات والفهارس وRLS وAudit Log.
+- `supabase/seed.sql` — بيانات اختبار مترابطة مع القيم المتوقعة لمؤشرات Dashboard.
 
 ## Architecture decisions
 
 - تستخدم الواجهة hooks مولدة من OpenAPI حتى يبقى عقد الخادم والعميل متزامناً.
-- الوضع الحالي يعرض بيانات عينة قابلة للتجربة، مع طبقة اتصال Supabase جاهزة للتحويل إلى البيانات الفعلية بعد تشغيل `supabase/schema.sql`.
+- لا توجد fallbacks تجريبية في الواجهة أو API؛ فشل Supabase يظهر كخطأ صريح بدل عرض أرقام ثابتة.
+- نسبة الإشغال تساوي الوحدات المؤجرة مقسومة على مجموع الوحدات المؤجرة والشاغرة، وتستبعد وحدات الصيانة من المقام.
 - واجهة المستخدم عربية بالكامل، بينما قيم enums في مخطط قاعدة البيانات محفوظة بالإنجليزية لتسهيل التكامل البرمجي.
 - الحذف المالي والعقود مصمم على أساس soft delete عبر `deleted_at`.
 

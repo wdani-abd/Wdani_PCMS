@@ -30,5 +30,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
+app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  const message = error instanceof Error ? error.message : "Unexpected server error";
+  res.status(500).json({ error: message });
+});
 
 export default app;

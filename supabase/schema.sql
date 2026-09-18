@@ -1,5 +1,5 @@
 -- نظام إدارة الأملاك والعقود
--- شغّل هذا الملف داخل Supabase SQL Editor قبل التحويل من الوضع التجريبي إلى البيانات الفعلية.
+-- شغّل هذا الملف داخل Supabase SQL Editor قبل تشغيل التطبيق، ثم شغّل seed.sql في بيئة الاختبار.
 
 create extension if not exists "pgcrypto";
 

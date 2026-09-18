@@ -1,6 +1,7 @@
 import { ReplitConnectors } from "@replit/connectors-sdk";
 
 const connectors = new ReplitConnectors();
+const sleep = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 export async function supabaseRequest<T>(
   path: string,
@@ -10,10 +11,17 @@ export async function supabaseRequest<T>(
     body?: string;
   } = {},
 ): Promise<T> {
-  const response = await connectors.proxy("supabase", path, init);
-  if (!response.ok) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const response = await connectors.proxy("supabase", path, init);
+    if (response.ok) {
+      return (await response.json()) as T;
+    }
     const detail = await response.text();
-    throw new Error(`Supabase request failed (${response.status}): ${detail}`);
+    if (response.status !== 429 || attempt === 2) {
+      throw new Error(`Supabase request failed (${response.status}): ${detail}`);
+    }
+    const retryAfter = Number(response.headers.get("retry-after") ?? 1);
+    await sleep(Math.max(retryAfter, 1) * 1000);
   }
-  return (await response.json()) as T;
+  throw new Error("Supabase request failed after retries");
 }
