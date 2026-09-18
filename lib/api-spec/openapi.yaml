@@ -3,13 +3,33 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: API نظام إدارة الأملاك والعقود
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: dashboard
+    description: لوحة التحكم
+  - name: properties
+    description: العقارات
+  - name: units
+    description: الوحدات
+  - name: tenants
+    description: المستأجرون
+  - name: contracts
+    description: العقود
+  - name: schedules
+    description: الاستحقاقات
+  - name: payments
+    description: الدفعات
+  - name: expenses
+    description: المصروفات
+  - name: notifications
+    description: التنبيهات
+  - name: search
+    description: البحث العام
 paths:
   /healthz:
     get:
@@ -24,7 +44,311 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get dashboard summary
+      responses:
+        "200":
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+  /properties:
+    get:
+      operationId: getProperties
+      tags: [properties]
+      summary: List properties
+      parameters:
+        - $ref: "#/components/parameters/Search"
+      responses:
+        "200":
+          description: Property list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Property"
+    post:
+      operationId: createProperty
+      tags: [properties]
+      summary: Create a property
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PropertyInput"
+      responses:
+        "201":
+          description: Created property
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Property"
+  /properties/{id}:
+    get:
+      operationId: getProperty
+      tags: [properties]
+      summary: Get property details
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Property details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PropertyDetails"
+  /units:
+    get:
+      operationId: getUnits
+      tags: [units]
+      summary: List units
+      parameters:
+        - $ref: "#/components/parameters/Search"
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: propertyId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Unit list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Unit"
+    post:
+      operationId: createUnit
+      tags: [units]
+      summary: Create a unit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UnitInput"
+      responses:
+        "201":
+          description: Created unit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unit"
+  /tenants:
+    get:
+      operationId: getTenants
+      tags: [tenants]
+      summary: List tenants
+      parameters:
+        - $ref: "#/components/parameters/Search"
+      responses:
+        "200":
+          description: Tenant list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Tenant"
+    post:
+      operationId: createTenant
+      tags: [tenants]
+      summary: Create a tenant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TenantInput"
+      responses:
+        "201":
+          description: Created tenant
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tenant"
+  /contracts:
+    get:
+      operationId: getContracts
+      tags: [contracts]
+      summary: List contracts
+      parameters:
+        - $ref: "#/components/parameters/Search"
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Contract list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Contract"
+    post:
+      operationId: createContract
+      tags: [contracts]
+      summary: Create a contract and schedules
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContractInput"
+      responses:
+        "201":
+          description: Created contract
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contract"
+  /payment-schedules:
+    get:
+      operationId: getPaymentSchedules
+      tags: [schedules]
+      summary: List payment schedules
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: range
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Schedule list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaymentSchedule"
+  /payments:
+    get:
+      operationId: getPayments
+      tags: [payments]
+      summary: List payments
+      parameters:
+        - $ref: "#/components/parameters/Search"
+      responses:
+        "200":
+          description: Payment list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Payment"
+    post:
+      operationId: createPayment
+      tags: [payments]
+      summary: Register a payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentInput"
+      responses:
+        "201":
+          description: Created payment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+  /expenses:
+    get:
+      operationId: getExpenses
+      tags: [expenses]
+      summary: List expenses
+      parameters:
+        - $ref: "#/components/parameters/Search"
+      responses:
+        "200":
+          description: Expense list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Expense"
+    post:
+      operationId: createExpense
+      tags: [expenses]
+      summary: Create an expense
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExpenseInput"
+      responses:
+        "201":
+          description: Created expense
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Expense"
+  /notifications:
+    get:
+      operationId: getNotifications
+      tags: [notifications]
+      summary: List notifications
+      responses:
+        "200":
+          description: Notification list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+  /search:
+    get:
+      operationId: globalSearch
+      tags: [search]
+      summary: Search across the system
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResults"
 components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+    Search:
+      name: search
+      in: query
+      schema:
+        type: string
   schemas:
     HealthStatus:
       type: object
@@ -33,4 +357,264 @@ components:
           type: string
       required:
         - status
+    Property:
+      type: object
+      required: [id, name, propertyType, city, district, unitsCount, rentedUnits, vacantUnits, netIncome]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        propertyType: { type: string }
+        city: { type: string }
+        district: { type: string }
+        locationDescription: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+        unitsCount: { type: integer }
+        rentedUnits: { type: integer }
+        vacantUnits: { type: integer }
+        netIncome: { type: number }
+        createdAt: { type: string }
+    PropertyInput:
+      type: object
+      required: [name, propertyType, city, district]
+      properties:
+        name: { type: string, minLength: 1 }
+        propertyType: { type: string }
+        city: { type: string }
+        district: { type: string }
+        locationDescription: { type: string }
+        notes: { type: string }
+    PropertyDetails:
+      allOf:
+        - $ref: "#/components/schemas/Property"
+        - type: object
+          required: [units, totalRevenue, totalArrears, totalExpenses]
+          properties:
+            units:
+              type: array
+              items: { $ref: "#/components/schemas/Unit" }
+            totalRevenue: { type: number }
+            totalArrears: { type: number }
+            totalExpenses: { type: number }
+    Unit:
+      type: object
+      required: [id, propertyId, propertyName, unitNumber, unitName, unitType, floor, area, expectedRent, status, hasElectricityMeter, hasWaterMeter]
+      properties:
+        id: { type: string }
+        propertyId: { type: string }
+        propertyName: { type: string }
+        unitNumber: { type: string }
+        unitName: { type: string }
+        unitType: { type: string }
+        floor: { type: string }
+        area: { type: number }
+        expectedRent: { type: number }
+        status: { type: string }
+        electricityMeterNumber: { type: ["string", "null"] }
+        waterMeterNumber: { type: ["string", "null"] }
+        gasMeterNumber: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+        hasElectricityMeter: { type: boolean }
+        hasWaterMeter: { type: boolean }
+    UnitInput:
+      type: object
+      required: [propertyId, unitNumber, unitName, unitType, expectedRent]
+      properties:
+        propertyId: { type: string }
+        unitNumber: { type: string }
+        unitName: { type: string }
+        unitType: { type: string }
+        floor: { type: string }
+        area: { type: number }
+        expectedRent: { type: number }
+        electricityMeterNumber: { type: string }
+        waterMeterNumber: { type: string }
+        gasMeterNumber: { type: string }
+        notes: { type: string }
+    Tenant:
+      type: object
+      required: [id, name, tenantType, mobile, activeContracts, totalDue, totalPaid, totalArrears]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        tenantType: { type: string }
+        nationalId: { type: ["string", "null"] }
+        mobile: { type: string }
+        email: { type: ["string", "null"] }
+        companyName: { type: ["string", "null"] }
+        activeContracts: { type: integer }
+        totalDue: { type: number }
+        totalPaid: { type: number }
+        totalArrears: { type: number }
+    TenantInput:
+      type: object
+      required: [name, tenantType, mobile]
+      properties:
+        name: { type: string }
+        tenantType: { type: string }
+        nationalId: { type: string }
+        mobile: { type: string }
+        email: { type: string }
+        companyName: { type: string }
+        commercialRegistration: { type: string }
+        notes: { type: string }
+    Contract:
+      type: object
+      required: [id, contractNumber, tenantId, tenantName, unitId, unitLabel, propertyName, startDate, endDate, annualRent, paymentFrequency, contractStatus, daysToEnd]
+      properties:
+        id: { type: string }
+        contractNumber: { type: string }
+        tenantId: { type: string }
+        tenantName: { type: string }
+        unitId: { type: string }
+        unitLabel: { type: string }
+        propertyName: { type: string }
+        startDate: { type: string }
+        endDate: { type: string }
+        annualRent: { type: number }
+        paymentFrequency: { type: string }
+        securityDeposit: { type: number }
+        contractStatus: { type: string }
+        daysToEnd: { type: integer }
+    ContractInput:
+      type: object
+      required: [contractNumber, tenantId, unitId, startDate, endDate, annualRent, paymentFrequency]
+      properties:
+        contractNumber: { type: string }
+        tenantId: { type: string }
+        unitId: { type: string }
+        startDate: { type: string }
+        endDate: { type: string }
+        annualRent: { type: number }
+        paymentFrequency: { type: string }
+        securityDeposit: { type: number }
+        notes: { type: string }
+    PaymentSchedule:
+      type: object
+      required: [id, contractNumber, tenantName, unitLabel, dueDate, amountDue, amountPaid, remainingAmount, status]
+      properties:
+        id: { type: string }
+        contractNumber: { type: string }
+        tenantName: { type: string }
+        unitLabel: { type: string }
+        dueDate: { type: string }
+        amountDue: { type: number }
+        amountPaid: { type: number }
+        remainingAmount: { type: number }
+        status: { type: string }
+    Payment:
+      type: object
+      required: [id, contractNumber, tenantName, amount, paymentDate, paymentMethod]
+      properties:
+        id: { type: string }
+        contractNumber: { type: string }
+        tenantName: { type: string }
+        amount: { type: number }
+        paymentDate: { type: string }
+        paymentMethod: { type: string }
+        referenceNumber: { type: ["string", "null"] }
+    PaymentInput:
+      type: object
+      required: [paymentScheduleId, amount, paymentDate, paymentMethod]
+      properties:
+        paymentScheduleId: { type: string }
+        amount: { type: number }
+        paymentDate: { type: string }
+        paymentMethod: { type: string }
+        bankName: { type: string }
+        referenceNumber: { type: string }
+        notes: { type: string }
+    Expense:
+      type: object
+      required: [id, propertyName, expenseType, description, amount, expenseDate, beneficiary]
+      properties:
+        id: { type: string }
+        propertyName: { type: string }
+        unitLabel: { type: ["string", "null"] }
+        expenseType: { type: string }
+        description: { type: string }
+        amount: { type: number }
+        expenseDate: { type: string }
+        beneficiary: { type: string }
+    ExpenseInput:
+      type: object
+      required: [propertyId, expenseType, description, amount, expenseDate, beneficiary]
+      properties:
+        propertyId: { type: string }
+        unitId: { type: string }
+        expenseType: { type: string }
+        description: { type: string }
+        amount: { type: number }
+        expenseDate: { type: string }
+        beneficiary: { type: string }
+        notes: { type: string }
+    Notification:
+      type: object
+      required: [id, type, title, description, createdAt, priority]
+      properties:
+        id: { type: string }
+        type: { type: string }
+        title: { type: string }
+        description: { type: string }
+        createdAt: { type: string }
+        priority: { type: string }
+        read: { type: boolean }
+    Dashboard:
+      type: object
+      required: [stats, revenueSeries, latestPayments, overdueSchedules, upcomingSchedules, expiringContracts, vacantUnits]
+      properties:
+        stats:
+          type: object
+          required: [properties, units, rentedUnits, vacantUnits, occupancyRate, activeContractsValue, dueAmount, collectedAmount, arrears, expenses, netIncome]
+          properties:
+            properties: { type: integer }
+            units: { type: integer }
+            rentedUnits: { type: integer }
+            vacantUnits: { type: integer }
+            occupancyRate: { type: number }
+            activeContractsValue: { type: number }
+            dueAmount: { type: number }
+            collectedAmount: { type: number }
+            arrears: { type: number }
+            expenses: { type: number }
+            netIncome: { type: number }
+        revenueSeries:
+          type: array
+          items:
+            type: object
+            required: [month, revenue, expenses]
+            properties:
+              month: { type: string }
+              revenue: { type: number }
+              expenses: { type: number }
+        latestPayments:
+          type: array
+          items: { $ref: "#/components/schemas/Payment" }
+        overdueSchedules:
+          type: array
+          items: { $ref: "#/components/schemas/PaymentSchedule" }
+        upcomingSchedules:
+          type: array
+          items: { $ref: "#/components/schemas/PaymentSchedule" }
+        expiringContracts:
+          type: array
+          items: { $ref: "#/components/schemas/Contract" }
+        vacantUnits:
+          type: array
+          items: { $ref: "#/components/schemas/Unit" }
+    SearchResults:
+      type: object
+      required: [properties, units, tenants, contracts]
+      properties:
+        properties:
+          type: array
+          items: { $ref: "#/components/schemas/Property" }
+        units:
+          type: array
+          items: { $ref: "#/components/schemas/Unit" }
+        tenants:
+          type: array
+          items: { $ref: "#/components/schemas/Tenant" }
+        contracts:
+          type: array
+          items: { $ref: "#/components/schemas/Contract" }
 

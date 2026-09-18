@@ -1,6 +1,6 @@
-# [Project name]
+# نظام إدارة الأملاك والعقود
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+تطبيق ويب عربي RTL لإدارة العقارات والوحدات والمستأجرين والعقود والاستحقاقات والدفعات والمصروفات والتقارير بالريال السعودي.
 
 ## Run & Operate
 
@@ -22,15 +22,22 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/property-management/src/App.tsx` — واجهة التطبيق ومسارات لوحة التحكم.
+- `artifacts/property-management/src/index.css` — ثيم RTL والألوان والطباعة.
+- `lib/api-spec/openapi.yaml` — عقد API ومصدر توليد hooks.
+- `artifacts/api-server/src/routes/property-management.ts` — عمليات API وبيانات العينة الحالية.
+- `supabase/schema.sql` — جداول Supabase والعلاقات والفهارس وRLS وAudit Log.
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- تستخدم الواجهة hooks مولدة من OpenAPI حتى يبقى عقد الخادم والعميل متزامناً.
+- الوضع الحالي يعرض بيانات عينة قابلة للتجربة، مع طبقة اتصال Supabase جاهزة للتحويل إلى البيانات الفعلية بعد تشغيل `supabase/schema.sql`.
+- واجهة المستخدم عربية بالكامل، بينما قيم enums في مخطط قاعدة البيانات محفوظة بالإنجليزية لتسهيل التكامل البرمجي.
+- الحذف المالي والعقود مصمم على أساس soft delete عبر `deleted_at`.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+تتضمن النسخة الأساسية لوحة تشغيل مالية وإشغال، إدارة العقارات والوحدات والمستأجرين والعقود، جداول السداد والدفعات والمصروفات، البحث العام، مركز التنبيهات، التقارير، المستندات والإعدادات.
 
 ## User preferences
 

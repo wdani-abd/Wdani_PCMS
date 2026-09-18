@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
@@ -78,72 +79,44 @@
   --elevate-1: rgba(0, 0, 0, 0.03);
   --elevate-2: rgba(0, 0, 0, 0.08);
 
-  --background: red; /*replace with H S L */
-
-  --foreground: red; /*replace with H S L */
-
-  --border: red; /*replace with H S L */
-
-  --card: red; /*replace with H S L */
-
-  --card-foreground: red; /*replace with H S L */
-
-  --card-border: red; /*replace with H S L */
-
-  --sidebar: red; /*replace with H S L */
-
-  --sidebar-foreground: red; /*replace with H S L */
-
-  --sidebar-border: red; /*replace with H S L */
-
-  --sidebar-primary: red; /*replace with H S L */
-
-  --sidebar-primary-foreground: red; /*replace with H S L */
-
-  --sidebar-accent: red; /*replace with H S L */
-
-  --sidebar-accent-foreground: red; /*replace with H S L */
-
-  --sidebar-ring: red; /*replace with H S L */
-
-  --popover: red; /*replace with H S L */
-
-  --popover-foreground: red; /*replace with H S L */
-
-  --popover-border: red; /*replace with H S L */
-
-  --primary: red; /*replace with H S L */
-
-  --primary-foreground: red; /*replace with H S L */
-
-  --secondary: red; /*replace with H S L */
-
-  --secondary-foreground: red; /*replace with H S L */
-
-  --muted: red; /*replace with H S L */
-
-  --muted-foreground: red; /*replace with H S L */
-
-  --accent: red; /*replace with H S L */
-
-  --accent-foreground: red; /*replace with H S L */
-
-  --destructive: red; /*replace with H S L */
-
-  --destructive-foreground: red; /*replace with H S L */
-
-  --input: red; /*replace with H S L */
-  --ring: red; /*replace with H S L */
-  --chart-1: red; /*replace with H S L */
-  --chart-2: red; /*replace with H S L */
-  --chart-3: red; /*replace with H S L */
-  --chart-4: red; /*replace with H S L */
-  --chart-5: red; /*replace with H S L */
-
-  --app-font-sans: 'Inter', sans-serif;
-  --app-font-serif: Georgia, serif;
-  --app-font-mono: Menlo, monospace;
-  --radius: 0.5rem; /* 8px */
+  --background: 210 28% 96%;
+  --foreground: 213 31% 18%;
+  --border: 210 19% 86%;
+  --card: 0 0% 100%;
+  --card-foreground: 213 31% 18%;
+  --card-border: 210 19% 86%;
+  --sidebar: 214 39% 18%;
+  --sidebar-foreground: 210 28% 95%;
+  --sidebar-border: 214 31% 27%;
+  --sidebar-primary: 39 73% 64%;
+  --sidebar-primary-foreground: 214 39% 18%;
+  --sidebar-accent: 214 31% 25%;
+  --sidebar-accent-foreground: 210 28% 97%;
+  --sidebar-ring: 39 73% 64%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 213 31% 18%;
+  --popover-border: 210 19% 86%;
+  --primary: 213 48% 29%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 39 73% 64%;
+  --secondary-foreground: 213 48% 22%;
+  --muted: 210 24% 92%;
+  --muted-foreground: 213 14% 48%;
+  --accent: 167 34% 91%;
+  --accent-foreground: 170 37% 25%;
+  --destructive: 4 67% 52%;
+  --destructive-foreground: 0 0% 100%;
+  --input: 210 19% 82%;
+  --ring: 39 73% 64%;
+  --chart-1: 213 48% 29%;
+  --chart-2: 39 73% 64%;
+  --chart-3: 167 34% 45%;
+  --chart-4: 4 67% 52%;
+  --chart-5: 197 42% 55%;
+  --app-font-sans: 'IBM Plex Sans Arabic', sans-serif;
+  --app-font-serif: 'IBM Plex Sans Arabic', sans-serif;
+  --app-font-mono: 'IBM Plex Mono', monospace;
+  --radius: 0.7rem;
   --shadow-2xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0); /*replace with H S L */
   --shadow-xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0); /*replace with H S L */
   --shadow-sm:
@@ -227,68 +200,40 @@
   --elevate-1: rgba(255, 255, 255, 0.04);
   --elevate-2: rgba(255, 255, 255, 0.09);
 
-  --background: red; /*replace with H S L */
-
-  --foreground: red; /*replace with H S L */
-
-  --border: red; /*replace with H S L */
-
-  --card: red; /*replace with H S L */
-
-  --card-foreground: red; /*replace with H S L */
-
-  --card-border: red; /*replace with H S L */
-
-  --sidebar: red; /*replace with H S L */
-
-  --sidebar-foreground: red; /*replace with H S L */
-
-  --sidebar-border: red; /*replace with H S L */
-
-  --sidebar-primary: red; /*replace with H S L */
-
-  --sidebar-primary-foreground: red; /*replace with H S L */
-
-  --sidebar-accent: red; /*replace with H S L */
-
-  --sidebar-accent-foreground: red; /*replace with H S L */
-
-  --sidebar-ring: red; /*replace with H S L */
-
-  --popover: red; /*replace with H S L */
-
-  --popover-foreground: red; /*replace with H S L */
-
-  --popover-border: red; /*replace with H S L */
-
-  --primary: red; /*replace with H S L */
-
-  --primary-foreground: red; /*replace with H S L */
-
-  --secondary: red; /*replace with H S L */
-
-  --secondary-foreground: red; /*replace with H S L */
-
-  --muted: red; /*replace with H S L */
-
-  --muted-foreground: red; /*replace with H S L */
-
-  --accent: red; /*replace with H S L */
-
-  --accent-foreground: red; /*replace with H S L */
-
-  --destructive: red; /*replace with H S L */
-
-  --destructive-foreground: red; /*replace with H S L */
-
-  /* Used as the border around inputs. Dark mode: Should be a border that is light enough to have high contrast when rendered on a --card background. More contrast than standard --border */
-  --input: red; /*replace with H S L */
-  --ring: red; /*replace with H S L */
-  --chart-1: red; /*replace with H S L */
-  --chart-2: red; /*replace with H S L */
-  --chart-3: red; /*replace with H S L */
-  --chart-4: red; /*replace with H S L */
-  --chart-5: red; /*replace with H S L */
+  --background: 214 39% 11%;
+  --foreground: 210 28% 95%;
+  --border: 214 31% 27%;
+  --card: 214 36% 15%;
+  --card-foreground: 210 28% 95%;
+  --card-border: 214 31% 27%;
+  --sidebar: 214 42% 9%;
+  --sidebar-foreground: 210 28% 95%;
+  --sidebar-border: 214 31% 21%;
+  --sidebar-primary: 39 73% 64%;
+  --sidebar-primary-foreground: 214 42% 9%;
+  --sidebar-accent: 214 31% 18%;
+  --sidebar-accent-foreground: 210 28% 95%;
+  --sidebar-ring: 39 73% 64%;
+  --popover: 214 36% 15%;
+  --popover-foreground: 210 28% 95%;
+  --popover-border: 214 31% 27%;
+  --primary: 39 73% 64%;
+  --primary-foreground: 214 42% 9%;
+  --secondary: 214 31% 24%;
+  --secondary-foreground: 210 28% 95%;
+  --muted: 214 31% 21%;
+  --muted-foreground: 210 20% 70%;
+  --accent: 167 30% 25%;
+  --accent-foreground: 167 40% 84%;
+  --destructive: 4 67% 58%;
+  --destructive-foreground: 0 0% 100%;
+  --input: 214 31% 30%;
+  --ring: 39 73% 64%;
+  --chart-1: 39 73% 64%;
+  --chart-2: 167 34% 55%;
+  --chart-3: 197 42% 65%;
+  --chart-4: 4 67% 58%;
+  --chart-5: 213 48% 60%;
 
   --shadow-2xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0);
   --shadow-xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0);
@@ -430,4 +375,25 @@
   .border.hover-elevate:not(.no-hover-interaction-elevate)::after {
     inset: -1px;
   }
+}
+
+html { direction: rtl; }
+body { min-width: 320px; background: hsl(var(--background)); }
+button, a, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+.app-shell { min-height: 100dvh; }
+.sidebar-pattern { background-image: linear-gradient(135deg, rgba(255,255,255,.035) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.035) 50%, rgba(255,255,255,.035) 75%, transparent 75%); background-size: 18px 18px; }
+.panel { background: hsl(var(--card)); border: 1px solid hsl(var(--card-border)); border-radius: 16px; box-shadow: 0 5px 18px rgba(29, 52, 77, .045); }
+.panel-hover { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+.panel-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(29, 52, 77, .09); border-color: hsl(var(--secondary)); }
+.hairline { height: 1px; background: hsl(var(--border)); }
+.skeleton { background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--card)) 50%, hsl(var(--muted)) 75%); background-size: 200% 100%; animation: skeleton 1.4s ease infinite; }
+@keyframes skeleton { to { background-position: -200% 0; } }
+@keyframes enter { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+.animate-enter { animation: enter .35s ease both; }
+.metric-number { font-family: var(--app-font-mono); letter-spacing: -.04em; }
+.scrollbar-thin::-webkit-scrollbar { width: 5px; height: 5px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 20px; }
+@media (max-width: 767px) {
+  .mobile-sheet { position: fixed; inset: auto 0 0; z-index: 50; border-radius: 20px 20px 0 0; }
 }

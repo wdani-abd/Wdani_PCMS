@@ -5,7 +5,8 @@
  * API نظام إدارة الأملاك والعقود
  * OpenAPI spec version: 0.1.0
  */
+import type { SearchParameter } from './searchParameter';
 
-export interface HealthStatus {
-  status: string;
-}
+export type GetPropertiesParams = {
+search?: SearchParameter;
+};
