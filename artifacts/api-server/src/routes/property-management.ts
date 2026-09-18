@@ -282,6 +282,18 @@ function maps(data: DataSet) {
   };
 }
 
+function effectiveUnitStatus(row: UnitRow, data: DataSet) {
+  const hasCurrentContract = data.contracts.some((contract) =>
+    contract.unit_id === row.id &&
+    ["Active", "PendingRenewal"].includes(contract.contract_status) &&
+    contract.deleted_at === null &&
+    contract.start_date <= todayIso() &&
+    contract.end_date >= todayIso()
+  );
+  if (hasCurrentContract) return "Rented";
+  return row.status === "Maintenance" ? "Maintenance" : "Vacant";
+}
+
 function scheduleStatus(row: ScheduleRow) {
   const remaining = number(row.remaining_amount);
   if (remaining <= 0) return "مدفوع";
@@ -302,7 +314,7 @@ function mapUnit(row: UnitRow, data: DataSet) {
     floor: row.floor ?? "",
     area: number(row.area),
     expectedRent: number(row.expected_rent),
-    status: unitStatusLabel[row.status] ?? row.status,
+    status: unitStatusLabel[effectiveUnitStatus(row, data)] ?? effectiveUnitStatus(row, data),
     electricityMeterNumber: row.electricity_meter_number,
     waterMeterNumber: row.water_meter_number,
     gasMeterNumber: row.gas_meter_number,
@@ -408,8 +420,8 @@ function mapProperty(row: PropertyRow, data: DataSet) {
     locationDescription: row.location_description,
     notes: row.notes,
     unitsCount: propertyUnits.length,
-    rentedUnits: propertyUnits.filter((unit) => unit.status === "Rented").length,
-    vacantUnits: propertyUnits.filter((unit) => unit.status === "Vacant").length,
+    rentedUnits: propertyUnits.filter((unit) => effectiveUnitStatus(unit, data) === "Rented").length,
+    vacantUnits: propertyUnits.filter((unit) => effectiveUnitStatus(unit, data) === "Vacant").length,
     netIncome: revenue - expenses,
     createdAt: row.created_at,
   };
@@ -463,8 +475,8 @@ function buildRevenueSeries(data: DataSet) {
 
 function buildDashboard(data: DataSet) {
   const today = todayIso();
-  const rentedUnits = data.units.filter((unit) => unit.status === "Rented").length;
-  const vacantUnits = data.units.filter((unit) => unit.status === "Vacant").length;
+  const rentedUnits = data.units.filter((unit) => effectiveUnitStatus(unit, data) === "Rented").length;
+  const vacantUnits = data.units.filter((unit) => effectiveUnitStatus(unit, data) === "Vacant").length;
   const totalAvailableUnits = rentedUnits + vacantUnits;
   const occupancyRate = totalAvailableUnits === 0 ? 0 : Math.round((rentedUnits / totalAvailableUnits) * 1000) / 10;
   const collectedAmount = data.payments.reduce((sum, payment) => sum + number(payment.amount), 0);
@@ -513,7 +525,7 @@ function buildDashboard(data: DataSet) {
     expiringContracts: expiring
       .sort((a, b) => a.end_date.localeCompare(b.end_date))
       .map((row) => mapContract(row, data)),
-    vacantUnits: data.units.filter((unit) => unit.status === "Vacant").map((row) => mapUnit(row, data)),
+    vacantUnits: data.units.filter((unit) => effectiveUnitStatus(unit, data) === "Vacant").map((row) => mapUnit(row, data)),
   };
 }
 
@@ -689,8 +701,14 @@ router.post("/contracts", asyncHandler(async (req, res) => {
     res.status(400).json({ error: "Tenant or unit not found" });
     return;
   }
-  if (data.contracts.some((row) => row.unit_id === input.unitId && row.contract_status === "Active")) {
-    res.status(409).json({ error: "Unit already has an active contract" });
+  const hasOverlappingContract = data.contracts.some((existing) =>
+    existing.unit_id === input.unitId &&
+    ["Active", "PendingRenewal"].includes(existing.contract_status) &&
+    existing.start_date <= input.endDate &&
+    existing.end_date >= input.startDate
+  );
+  if (hasOverlappingContract) {
+    res.status(409).json({ error: "Unit already has an overlapping active contract" });
     return;
   }
   const row = await insertRow<ContractRow>("contracts", {
@@ -705,10 +723,7 @@ router.post("/contracts", asyncHandler(async (req, res) => {
     contract_status: "Active",
     notes: input.notes || null,
   });
-  await Promise.all([
-    insertRows<ScheduleRow>("payment_schedules", paymentScheduleRows(row)),
-    updateRows<UnitRow>("units", `id=eq.${encodeURIComponent(input.unitId)}`, { status: "Rented" }),
-  ]);
+  await insertRows<ScheduleRow>("payment_schedules", paymentScheduleRows(row));
   const refreshed = await loadData();
   res.status(201).json(CreateContractResponse.parse(mapContract(row, refreshed)));
 }));
@@ -754,13 +769,6 @@ router.post("/payments", asyncHandler(async (req, res) => {
     bank_name: input.bankName || null,
     reference_number: input.referenceNumber || null,
     notes: input.notes || null,
-  });
-  const amountPaid = number(schedule.amount_paid) + input.amount;
-  const remaining = Math.max(number(schedule.amount_due) - amountPaid, 0);
-  await updateRows<ScheduleRow>("payment_schedules", `id=eq.${encodeURIComponent(schedule.id)}`, {
-    amount_paid: amountPaid,
-    status: remaining === 0 ? "Paid" : schedule.due_date < todayIso() ? "Overdue" : "Partial",
-    updated_at: new Date().toISOString(),
   });
   const refreshed = await loadData();
   res.status(201).json(CreatePaymentResponse.parse(mapPayment(row, refreshed)));
