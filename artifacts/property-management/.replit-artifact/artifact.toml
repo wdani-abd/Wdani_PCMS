@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "نظام إدارة الأملاك والعقود"
+description = "تطبيق ويب عربي متكامل لإدارة العقارات والوحدات والمستأجرين والعقود والاستحقاقات والدفعات والمصروفات والتقارير، مع تجربة RTL متجاوبة ومهيأة للربط مع Supabase."
+version = "1.0.0"
+id = "artifacts/property-management"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 26118
+
+[services.development]
+run = "pnpm --filter @workspace/property-management run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/property-management", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/property-management/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "26118"
+BASE_PATH = "/"
