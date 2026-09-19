@@ -34,6 +34,7 @@ import {
   GlobalSearchResponse,
 } from "@workspace/api-zod";
 import { supabaseRequest } from "../lib/supabase";
+import { requireAuth } from "../middleware/auth";
 
 type PropertyRow = {
   id: string;
@@ -220,11 +221,11 @@ const expenseTypeValue: Record<string, string> = {
   "أخرى": "Other",
 };
 
-async function getRows<T>(table: string, query = "select=*"): Promise<T[]> {
-  return supabaseRequest<T[]>(`/rest/v1/${table}?${query}`);
+async function getRows<T>(accessToken: string, table: string, query = "select=*"): Promise<T[]> {
+  return supabaseRequest<T[]>(`/rest/v1/${table}?${query}`, {}, accessToken);
 }
 
-async function insertRow<T>(table: string, body: Record<string, unknown>): Promise<T> {
+async function insertRow<T>(accessToken: string, table: string, body: Record<string, unknown>): Promise<T> {
   const rows = await supabaseRequest<T[]>(`/rest/v1/${table}`, {
     method: "POST",
     headers: {
@@ -232,12 +233,12 @@ async function insertRow<T>(table: string, body: Record<string, unknown>): Promi
       Prefer: "return=representation",
     },
     body: JSON.stringify(body),
-  });
+  }, accessToken);
   if (!rows[0]) throw new Error(`Supabase did not return the inserted ${table} row`);
   return rows[0];
 }
 
-async function insertRows<T>(table: string, body: Array<Record<string, unknown>>): Promise<T[]> {
+async function insertRows<T>(accessToken: string, table: string, body: Array<Record<string, unknown>>): Promise<T[]> {
   if (!body.length) return [];
   return supabaseRequest<T[]>(`/rest/v1/${table}`, {
     method: "POST",
@@ -246,10 +247,10 @@ async function insertRows<T>(table: string, body: Array<Record<string, unknown>>
       Prefer: "return=representation",
     },
     body: JSON.stringify(body),
-  });
+  }, accessToken);
 }
 
-async function updateRows<T>(table: string, query: string, body: Record<string, unknown>): Promise<T[]> {
+async function updateRows<T>(accessToken: string, table: string, query: string, body: Record<string, unknown>): Promise<T[]> {
   return supabaseRequest<T[]>(`/rest/v1/${table}?${query}`, {
     method: "PATCH",
     headers: {
@@ -257,18 +258,18 @@ async function updateRows<T>(table: string, query: string, body: Record<string, 
       Prefer: "return=representation",
     },
     body: JSON.stringify(body),
-  });
+  }, accessToken);
 }
 
-async function loadData(): Promise<DataSet> {
+async function loadData(accessToken: string): Promise<DataSet> {
   const [properties, units, tenants, contracts, schedules, payments, expenses] = await Promise.all([
-    getRows<PropertyRow>("properties", "select=*&deleted_at=is.null"),
-    getRows<UnitRow>("units", "select=*&deleted_at=is.null"),
-    getRows<TenantRow>("tenants", "select=*&deleted_at=is.null"),
-    getRows<ContractRow>("contracts", "select=*&deleted_at=is.null"),
-    getRows<ScheduleRow>("payment_schedules"),
-    getRows<PaymentRow>("payments"),
-    getRows<ExpenseRow>("expenses", "select=*&deleted_at=is.null"),
+    getRows<PropertyRow>(accessToken, "properties", "select=*&deleted_at=is.null"),
+    getRows<UnitRow>(accessToken, "units", "select=*&deleted_at=is.null"),
+    getRows<TenantRow>(accessToken, "tenants", "select=*&deleted_at=is.null"),
+    getRows<ContractRow>(accessToken, "contracts", "select=*&deleted_at=is.null"),
+    getRows<ScheduleRow>(accessToken, "payment_schedules"),
+    getRows<PaymentRow>(accessToken, "payments"),
+    getRows<ExpenseRow>(accessToken, "expenses", "select=*&deleted_at=is.null"),
   ]);
   return { properties, units, tenants, contracts, schedules, payments, expenses };
 }
@@ -558,15 +559,17 @@ const asyncHandler = (handler: AsyncHandler) => (req: Request, res: Response, ne
 };
 
 const router: IRouter = Router();
+router.use(requireAuth);
+const accessToken = (req: Request) => req.auth!.accessToken;
 
-router.get("/dashboard", asyncHandler(async (_req, res) => {
-  const data = await loadData();
+router.get("/dashboard", asyncHandler(async (req, res) => {
+  const data = await loadData(accessToken(req));
   res.json(GetDashboardResponse.parse(buildDashboard(data)));
 }));
 
 router.get("/properties", asyncHandler(async (req, res) => {
   const parsed = GetPropertiesQueryParams.parse(req.query);
-  const data = await loadData();
+  const data = await loadData(accessToken(req));
   const result = data.properties
     .filter((row) => !parsed.search || matches([row.name, row.city, row.district], parsed.search))
     .map((row) => mapProperty(row, data));
@@ -575,7 +578,7 @@ router.get("/properties", asyncHandler(async (req, res) => {
 
 router.post("/properties", asyncHandler(async (req, res) => {
   const input = CreatePropertyBody.parse(req.body);
-  const row = await insertRow<PropertyRow>("properties", {
+  const row = await insertRow<PropertyRow>(accessToken(req), "properties", {
     name: input.name,
     property_type: propertyTypeValue[input.propertyType] ?? input.propertyType,
     city: input.city,
@@ -583,13 +586,13 @@ router.post("/properties", asyncHandler(async (req, res) => {
     location_description: input.locationDescription || null,
     notes: input.notes || null,
   });
-  const data = await loadData();
+  const data = await loadData(accessToken(req));
   res.status(201).json(CreatePropertyResponse.parse(mapProperty(row, data)));
 }));
 
 router.get("/properties/:id", asyncHandler(async (req, res) => {
   const { id } = GetPropertyParams.parse(req.params);
-  const data = await loadData();
+  const data = await loadData(accessToken(req));
   const row = data.properties.find((property) => property.id === id);
   if (!row) {
     res.status(404).json({ error: "Property not found" });
@@ -619,14 +622,14 @@ router.get("/properties/:id", asyncHandler(async (req, res) => {
 
 router.get("/units", asyncHandler(async (req, res) => {
   const parsed = GetUnitsQueryParams.parse(req.query);
-  const data = await loadData();
+  const data = await loadData(accessToken(req));
   const databaseStatus = parsed.status
     ? Object.entries(unitStatusLabel).find(([, label]) => label === parsed.status)?.[0] ?? parsed.status
     : undefined;
   const result = data.units
     .filter((row) =>
       (!parsed.propertyId || row.property_id === parsed.propertyId) &&
-      (!databaseStatus || row.status === databaseStatus) &&
+      (!databaseStatus || effectiveUnitStatus(row, data) === databaseStatus) &&
       (!parsed.search || matches([
         row.unit_number,
         row.unit_name,
@@ -638,7 +641,7 @@ router.get("/units", asyncHandler(async (req, res) => {
 
 router.post("/units", asyncHandler(async (req, res) => {
   const input = CreateUnitBody.parse(req.body);
-  const row = await insertRow<UnitRow>("units", {
+  const row = await insertRow<UnitRow>(accessToken(req), "units", {
     property_id: input.propertyId,
     unit_number: input.unitNumber,
     unit_name: input.unitName,
@@ -652,13 +655,13 @@ router.post("/units", asyncHandler(async (req, res) => {
     gas_meter_number: input.gasMeterNumber || null,
     notes: input.notes || null,
   });
-  const data = await loadData();
+  const data = await loadData(accessToken(req));
   res.status(201).json(CreateUnitResponse.parse(mapUnit(row, data)));
 }));
 
 router.get("/tenants", asyncHandler(async (req, res) => {
   const parsed = GetTenantsQueryParams.parse(req.query);
-  const data = await loadData();
+  const data = await loadData(accessToken(req));
   const result = data.tenants
     .filter((row) => !parsed.search || matches([row.name, row.mobile, row.national_id, row.company_name], parsed.search))
     .map((row) => mapTenant(row, data));
@@ -667,7 +670,7 @@ router.get("/tenants", asyncHandler(async (req, res) => {
 
 router.post("/tenants", asyncHandler(async (req, res) => {
   const input = CreateTenantBody.parse(req.body);
-  const row = await insertRow<TenantRow>("tenants", {
+  const row = await insertRow<TenantRow>(accessToken(req), "tenants", {
     tenant_type: tenantTypeValue[input.tenantType] ?? input.tenantType,
     name: input.name,
     national_id: input.nationalId || null,
@@ -677,13 +680,13 @@ router.post("/tenants", asyncHandler(async (req, res) => {
     commercial_registration: input.commercialRegistration || null,
     notes: input.notes || null,
   });
-  const data = await loadData();
+  const data = await loadData(accessToken(req));
   res.status(201).json(CreateTenantResponse.parse(mapTenant(row, data)));
 }));
 
 router.get("/contracts", asyncHandler(async (req, res) => {
   const parsed = GetContractsQueryParams.parse(req.query);
-  const data = await loadData();
+  const data = await loadData(accessToken(req));
   const result = data.contracts
     .map((row) => mapContract(row, data))
     .filter((contract) =>
@@ -694,7 +697,7 @@ router.get("/contracts", asyncHandler(async (req, res) => {
 
 router.post("/contracts", asyncHandler(async (req, res) => {
   const input = CreateContractBody.parse(req.body);
-  const data = await loadData();
+  const data = await loadData(accessToken(req));
   const unit = data.units.find((row) => row.id === input.unitId);
   const tenant = data.tenants.find((row) => row.id === input.tenantId);
   if (!unit || !tenant) {
@@ -711,7 +714,7 @@ router.post("/contracts", asyncHandler(async (req, res) => {
     res.status(409).json({ error: "Unit already has an overlapping active contract" });
     return;
   }
-  const row = await insertRow<ContractRow>("contracts", {
+  const row = await insertRow<ContractRow>(accessToken(req), "contracts", {
     contract_number: input.contractNumber,
     tenant_id: input.tenantId,
     unit_id: input.unitId,
@@ -723,14 +726,14 @@ router.post("/contracts", asyncHandler(async (req, res) => {
     contract_status: "Active",
     notes: input.notes || null,
   });
-  await insertRows<ScheduleRow>("payment_schedules", paymentScheduleRows(row));
-  const refreshed = await loadData();
+  await insertRows<ScheduleRow>(accessToken(req), "payment_schedules", paymentScheduleRows(row));
+  const refreshed = await loadData(accessToken(req));
   res.status(201).json(CreateContractResponse.parse(mapContract(row, refreshed)));
 }));
 
 router.get("/payment-schedules", asyncHandler(async (req, res) => {
   const parsed = GetPaymentSchedulesQueryParams.parse(req.query);
-  const data = await loadData();
+  const data = await loadData(accessToken(req));
   const result = data.schedules
     .map((row) => mapSchedule(row, data))
     .filter((schedule) => !parsed.status || schedule.status === parsed.status);
@@ -739,7 +742,7 @@ router.get("/payment-schedules", asyncHandler(async (req, res) => {
 
 router.get("/payments", asyncHandler(async (req, res) => {
   const parsed = GetPaymentsQueryParams.parse(req.query);
-  const data = await loadData();
+  const data = await loadData(accessToken(req));
   const result = data.payments
     .map((row) => mapPayment(row, data))
     .filter((payment) => !parsed.search || matches([payment.contractNumber, payment.tenantName, payment.referenceNumber], parsed.search));
@@ -748,7 +751,7 @@ router.get("/payments", asyncHandler(async (req, res) => {
 
 router.post("/payments", asyncHandler(async (req, res) => {
   const input = CreatePaymentBody.parse(req.body);
-  const data = await loadData();
+  const data = await loadData(accessToken(req));
   const schedule = data.schedules.find((row) => row.id === input.paymentScheduleId);
   const contract = schedule ? data.contracts.find((row) => row.id === schedule.contract_id) : undefined;
   if (!schedule || !contract) {
@@ -759,7 +762,7 @@ router.post("/payments", asyncHandler(async (req, res) => {
     res.status(400).json({ error: "Payment amount must be positive and cannot exceed the remaining amount" });
     return;
   }
-  const row = await insertRow<PaymentRow>("payments", {
+  const row = await insertRow<PaymentRow>(accessToken(req), "payments", {
     payment_schedule_id: schedule.id,
     contract_id: contract.id,
     tenant_id: contract.tenant_id,
@@ -770,13 +773,13 @@ router.post("/payments", asyncHandler(async (req, res) => {
     reference_number: input.referenceNumber || null,
     notes: input.notes || null,
   });
-  const refreshed = await loadData();
+  const refreshed = await loadData(accessToken(req));
   res.status(201).json(CreatePaymentResponse.parse(mapPayment(row, refreshed)));
 }));
 
 router.get("/expenses", asyncHandler(async (req, res) => {
   const parsed = GetExpensesQueryParams.parse(req.query);
-  const data = await loadData();
+  const data = await loadData(accessToken(req));
   const result = data.expenses
     .map((row) => mapExpense(row, data))
     .filter((expense) => !parsed.search || matches([expense.propertyName, expense.description, expense.beneficiary], parsed.search));
@@ -785,7 +788,7 @@ router.get("/expenses", asyncHandler(async (req, res) => {
 
 router.post("/expenses", asyncHandler(async (req, res) => {
   const input = CreateExpenseBody.parse(req.body);
-  const row = await insertRow<ExpenseRow>("expenses", {
+  const row = await insertRow<ExpenseRow>(accessToken(req), "expenses", {
     property_id: input.propertyId,
     unit_id: input.unitId || null,
     expense_type: expenseTypeValue[input.expenseType] ?? input.expenseType,
@@ -795,12 +798,12 @@ router.post("/expenses", asyncHandler(async (req, res) => {
     beneficiary: input.beneficiary,
     notes: input.notes || null,
   });
-  const data = await loadData();
+  const data = await loadData(accessToken(req));
   res.status(201).json(CreateExpenseResponse.parse(mapExpense(row, data)));
 }));
 
-router.get("/notifications", asyncHandler(async (_req, res) => {
-  const rows = await getRows<NotificationRow>("notifications", "select=*&order=created_at.desc");
+router.get("/notifications", asyncHandler(async (req, res) => {
+  const rows = await getRows<NotificationRow>(accessToken(req), "notifications", "select=*&order=created_at.desc");
   res.json(GetNotificationsResponse.parse(rows.map((row) => ({
     id: row.id,
     type: row.type,
@@ -814,7 +817,7 @@ router.get("/notifications", asyncHandler(async (_req, res) => {
 
 router.get("/search", asyncHandler(async (req, res) => {
   const { q } = GlobalSearchQueryParams.parse(req.query);
-  const data = await loadData();
+  const data = await loadData(accessToken(req));
   const properties = data.properties.map((row) => mapProperty(row, data));
   const units = data.units.map((row) => mapUnit(row, data));
   const tenants = data.tenants.map((row) => mapTenant(row, data));
